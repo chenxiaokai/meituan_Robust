@@ -1,0 +1,75 @@
+apply plugin: 'com.android.application'
+apply plugin: 'me.tatarka.retrolambda'
+//制作补丁时将这个打开，auto-patch-plugin紧跟着com.android.application 并 关闭 apply plugin 'robust' 插件
+apply plugin: 'auto-patch-plugin'
+//apply plugin: 'robust'
+/*
+ 在生成 apk 的时候使用 apply plugin:’robust’，该插件会生成打补丁时需要的方法记录文件 methodMap.robust，该文件在打补丁的时候用来区别到底哪些方法需要被修复，所以有它才能打补丁。
+ 而上文所说的还有 mapping.txt 文件，该文件列出了原始的类，方法和字段名与混淆后代码间的映射。这个文件很重要，可以用它来翻译被混淆的代码。但也不是必须的，如果不需要混淆，可以不保留。
+ 这两个文件在生成apk后，分别在build/outputs/robust/methodsMap.robust，build/outputs/mapping/mapping.txt(需要开启混淆后才会出现)，我们需要自己分别拷贝到 app/robust 下，
+ 在 app 目录新建个叫 robust 的文件夹，把这两个文件放进去就 ok 了
+ */
+
+android {
+    compileSdkVersion 23
+    buildToolsVersion '25.0.2'
+    defaultConfig {
+        applicationId "com.meituan.robust.sample"
+        minSdkVersion 9
+        targetSdkVersion 23
+        versionCode 1
+        versionName "1.0"
+    }
+    signingConfigs {
+        meituan {
+            storeFile file("keystore.jks")
+            storePassword "robust"
+            keyAlias "robust"
+            keyPassword "robust"
+        }
+    }
+    buildTypes {
+        release {
+//            minifyEnabled false
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.meituan
+        }
+        debug {
+            minifyEnabled true
+//            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+
+    }
+    packagingOptions {
+        exclude 'META-INF/maven/com.google.guava/guava/pom.properties'
+        exclude 'META-INF/maven/com.google.guava/guava/pom.xml'
+        exclude 'META-INF/maven/commons-cli/commons-cli/pom.properties'
+        exclude 'META-INF/maven/commons-cli/commons-cli/pom.xml'
+    }
+}
+configurations {
+    all*.exclude group: 'com.google.guava', module: 'guava'
+}
+configurations.all {
+    resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
+}
+dependencies {
+    compile 'com.google.code.gson:gson:2.7'
+    compile 'com.squareup.picasso:picasso:2.5.2'
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+    testCompile 'junit:junit:4.12'
+    compile 'com.android.support:appcompat-v7:24.2.1'
+    compile 'com.squareup.okhttp:okhttp:2.5.0'
+    compile 'com.google.code.gson:gson:2.3.1'
+    compile 'com.android.support:design:24.2.1'
+    compile 'org.javassist:javassist:3.20.0-GA'
+    compile project(path: ':patch')
+}
