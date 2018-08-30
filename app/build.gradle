@@ -1,8 +1,8 @@
 apply plugin: 'com.android.application'
 apply plugin: 'me.tatarka.retrolambda'
 //制作补丁时将这个打开，auto-patch-plugin紧跟着com.android.application 并 关闭 apply plugin 'robust' 插件
-apply plugin: 'auto-patch-plugin'
-//apply plugin: 'robust'
+//apply plugin: 'auto-patch-plugin'
+apply plugin: 'robust'
 /*
  在生成 apk 的时候使用 apply plugin:’robust’，该插件会生成打补丁时需要的方法记录文件 methodMap.robust，该文件在打补丁的时候用来区别到底哪些方法需要被修复，所以有它才能打补丁。
  而上文所说的还有 mapping.txt 文件，该文件列出了原始的类，方法和字段名与混淆后代码间的映射。这个文件很重要，可以用它来翻译被混淆的代码。但也不是必须的，如果不需要混淆，可以不保留。
